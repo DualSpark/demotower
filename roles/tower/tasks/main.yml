@@ -1,13 +1,7 @@
 ---
-- name: Raw bootstrap for python
-  raw: yum -y install python libselinux-python
+- name: install EPEL repo
+  yum: name=http://fedora.mirrors.pair.com/epel/7/x86_64/e/epel-release-7-1.noarch.rpm state=present
 
-- name: Create the repository for EPEL
-  copy: src=epel.repo dest=/etc/yum.repos.d/epel.repo
-
-- name: Create the GPG key for EPEL
-  copy: src=RPM-GPG-KEY-EPEL-6 dest=/etc/pki/rpm-gpg
-  
 - name: yum update all the things
   yum: name=* state=latest
 
