@@ -5,18 +5,30 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "matyunin/centos7"
-    config.vm.define "tower", primary: true do |tower|
-      config.vm.provider :virtualbox do |vb, override|
-        vb.customize ["modifyvm", :id, "--memory", "2048"]
-      end
-    tower.vm.network :private_network, ip: "10.42.0.10"
-  end
-  config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "tower.yml"
-    ansible.verbose = "v"
-    ansible.sudo = "true"
-    ansible.sudo_user = "root"
-    ansible.host_key_checking = "false"
+
+  config.vm.define 'tower' do |tower|
+
+    tower.vm.box = "matyunin/centos7"
+    tower.vm.provider :virtualbox do |vb, override|
+      vb.customize ["modifyvm", :id, "--memory", "2048"]
+    end
+
+    if Vagrant.has_plugin?("landrush")
+      config.landrush.enabled = true
+      config.landrush.tld = "dev"
+      config.landrush.guest_redirect_dns = false
+      tower.vm.network :private_network, type: "dhcp"
+      tower.vm.hostname = "tower.ansible.dev"
+    else
+      tower.vm.network :private_network, ip: "10.42.0.10"
+    end
+
+    tower.vm.provision "ansible" do |ansible|
+      ansible.playbook = "tower.yml"
+      ansible.verbose = "v"
+      ansible.sudo = "true"
+      ansible.sudo_user = "root"
+      ansible.host_key_checking = "false"
+    end
   end
 end

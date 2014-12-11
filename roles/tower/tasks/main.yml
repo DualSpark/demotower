@@ -1,11 +1,11 @@
 ---
 - name: install EPEL repo
-  yum: name=http://fedora.mirrors.pair.com/epel/7/x86_64/e/epel-release-7-1.noarch.rpm state=present
+  yum: name=http://fedora.mirrors.pair.com/epel/7/x86_64/e/epel-release-7-2.noarch.rpm state=present
 
-- name: yum update all the things
+- name: yum update base image packages
   yum: name=* state=latest
 
-- name: install some useful packages 
+- name: install package dependencies and other common packages 
   yum: name={{ item }} state=latest enablerepo=epel-testing
   with_items:
   - git
@@ -18,11 +18,14 @@
   get_url: url=http://releases.ansible.com/ansible-tower/setup/ansible-tower-setup-{{tower_version}}.tar.gz
     dest=/opt/ force=yes
 
+- name: create extract folder
+  file: dest=/opt/ansible-tower-setup mode=640 owner=root group=root state=directory
+
 - name: extract Tower
-  command: chdir=/opt/ creates=/opt/ansible-tower-setup-{{tower_version}} tar zxvf ansible-tower-setup-{{tower_version}}.tar.gz
+  command: chdir=/opt/ creates=/opt/ansible-tower-setup/setup.py tar zxvf ansible-tower-setup-{{tower_version}}.tar.gz --strip 1 -C /opt/ansible-tower-setup
 
 - name: run the Tower installer
-  command: chdir=/opt/ansible-tower-setup-{{tower_version}} creates=/etc/awx/settings.py ./setup.sh
+  command: chdir=/opt/ansible-tower-setup creates=/etc/awx/settings.py ./setup.sh
 
 - name: create etc ansible directory
   action: file dest={{configdir}} state=directory
