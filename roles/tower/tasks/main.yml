@@ -1,19 +1,33 @@
 ---
 - name: install EPEL repo
   yum: name=http://fedora.mirrors.pair.com/epel/7/x86_64/e/epel-release-7-5.noarch.rpm state=present
+  when: ansible_os_family == "RedHat"
 
 - name: yum update base image packages
   yum: name=* state=latest
+  when: ansible_os_family == "RedHat"
 
-- name: install package dependencies and other common packages 
+- name: install package dependencies and other common packages RedHat-based hosts
   yum: name={{ item }} state=latest enablerepo=epel-testing
   with_items:
   - git
   - python-pip
   - unzip
   - python-psphere
-  - ansible 
+  when: ansible_os_family == "RedHat"
 
+- name: install package dependencies and other common packages for Debian-based hosts
+  apt: name={{ item }} state=latest update_cache=yes upgrade=yes cache_valid_time=600
+  with_items: 
+  - git
+  - python-pip
+  - unzip
+  - python-psphere
+  when: ansible_os_family == "Debian"
+  
+- name: install Ansible via pip
+  command: pip install ansible
+  
 - name: download Tower setup
   get_url: url=http://releases.ansible.com/ansible-tower/setup/ansible-tower-setup-{{tower_version}}.tar.gz
     dest=/opt/ force=yes
