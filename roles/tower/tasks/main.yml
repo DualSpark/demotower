@@ -29,23 +29,23 @@
   command: pip install ansible
   
 - name: download Tower setup
-  get_url: url=http://releases.ansible.com/ansible-tower/setup/ansible-tower-setup-{{tower_version}}.tar.gz
+  get_url: url=http://releases.ansible.com/ansible-tower/setup/ansible-tower-setup-{{tower_version | default('latest')}}.tar.gz
     dest=/opt/ force=yes
 
 - name: create extract folder
   file: dest=/opt/ansible-tower-setup mode=640 owner=root group=root state=directory
 
 - name: extract Tower
-  command: chdir=/opt/ creates=/opt/ansible-tower-setup/setup.py tar zxvf ansible-tower-setup-{{tower_version}}.tar.gz --strip 1 -C /opt/ansible-tower-setup
+  command: chdir=/opt/ creates=/opt/ansible-tower-setup/setup.py tar zxvf ansible-tower-setup-{{tower_version | default('latest')}}.tar.gz --strip 1 -C /opt/ansible-tower-setup
 
 - name: run the Tower installer
   command: chdir=/opt/ansible-tower-setup creates=/etc/awx/settings.py ./setup.sh
 
 - name: create etc ansible directory
-  action: file dest={{configdir}} state=directory
+  action: file dest={{configdir | default('/etc/ansible')}} state=directory
 
 - name: populate etc ansible config
-  copy: src=ansible.cfg dest=/{{configdir}}
+  copy: src=ansible.cfg dest=/{{configdir | default('/etc/ansible')}}
 
 - name: install tower cli
   shell: pip install ansible-tower-cli
